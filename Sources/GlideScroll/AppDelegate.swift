@@ -7,10 +7,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         SettingsStore.shared.bootstrap()
         if AXIsProcessTrusted() {
             ScrollEngine.shared.start()
+        } else {
+            // Keep polling so the engine starts the moment access is granted,
+            // even if the user grants it with the settings window closed.
+            AccessibilityPermission.shared.startPolling()
         }
         if !Self.isLoginItemLaunch() {
             openMainWindow()
         }
+    }
+
+    // Menu bar app: closing the settings window must not quit.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
