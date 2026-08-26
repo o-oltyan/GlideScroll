@@ -3,7 +3,9 @@ import SwiftUI
 @main
 struct GlideScrollApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @State private var settings = SettingsStore.shared
+    // Scene builders don't track @Observable changes, so isInserted must be
+    // backed by @AppStorage for the icon to actually appear/disappear live.
+    @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
 
     var body: some Scene {
         Window("GlideScroll", id: "main") {
@@ -15,7 +17,7 @@ struct GlideScrollApp: App {
         .handlesExternalEvents(matching: ["main"])
 
         MenuBarExtra("GlideScroll", systemImage: "computermouse.fill",
-                     isInserted: Bindable(settings).showMenuBarIcon) {
+                     isInserted: $showMenuBarIcon) {
             MenuBarView()
         }
     }

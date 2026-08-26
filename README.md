@@ -7,7 +7,7 @@ GlideScroll intercepts the choppy, line-by-line scroll events a mouse wheel prod
 ## Features
 
 - **Smooth scrolling** — each wheel notch glides instead of jumping, with adjustable smoothness and speed
-- **Reverse scroll direction** — mouse only; the trackpad keeps its natural direction
+- **Reverse scroll direction** — independent toggles for the mouse and the trackpad
 - **Modifier keys** — hold **Shift** to scroll horizontally, hold **Option** to temporarily disable smoothing (both toggleable)
 - **Menu bar item** with quick toggles — and an app-level setting to hide it entirely
 - **Settings window** opens when you launch the app from Finder / Spotlight / Raycast, so everything stays configurable even with the menu bar icon hidden
@@ -51,7 +51,7 @@ VERSION=1.0.0 Scripts/release.sh
 
 ## Caveats
 
-- **Magic Mouse** scrolls with the same continuous event signature as the built-in trackpad, so GlideScroll cannot distinguish it and leaves it untouched (it is already smooth; reversal does not apply to it either).
+- **Magic Mouse** scrolls with the same continuous event signature as the built-in trackpad, so GlideScroll cannot distinguish the two: smoothing leaves it untouched (it is already smooth), and the *trackpad* reverse toggle is the one that affects it.
 - Smoothing swallows the original wheel events and re-posts synthetic ones; a handful of apps that read raw HID input (some games, VMs, screen-sharing clients) may prefer the **Option** bypass.
 
 ## License

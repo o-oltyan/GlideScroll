@@ -5,6 +5,9 @@ struct GeneralSettingsView: View {
     private var settings: SettingsStore { .shared }
     private var loginItem: LaunchAtLogin { .shared }
 
+    // Same @AppStorage key as the MenuBarExtra's isInserted binding — scenes
+    // only react to @AppStorage, not to SettingsStore.
+    @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
     @State private var showHideIconWarning = false
 
     var body: some View {
@@ -33,8 +36,8 @@ struct GeneralSettingsView: View {
                 }
             }
             Section {
-                Toggle("Show menu bar icon", isOn: bindable.showMenuBarIcon)
-                if !settings.showMenuBarIcon {
+                Toggle("Show menu bar icon", isOn: $showMenuBarIcon)
+                if !showMenuBarIcon {
                     Text("The menu bar icon is hidden. To get back to these settings, open GlideScroll again from Finder, Spotlight, or Raycast.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -47,7 +50,7 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .padding(.vertical, 4)
-        .onChange(of: settings.showMenuBarIcon) { _, newValue in
+        .onChange(of: showMenuBarIcon) { _, newValue in
             if !newValue { showHideIconWarning = true }
         }
         .alert("Menu bar icon hidden", isPresented: $showHideIconWarning) {

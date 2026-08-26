@@ -9,8 +9,11 @@ struct ScrollingSettingsView: View {
         Form {
             Section {
                 Toggle("Smooth scrolling", isOn: bindable.smoothScrolling)
-                Toggle("Reverse scroll direction", isOn: bindable.reverseScrolling)
-                Text("Reversing only affects the mouse wheel — the trackpad keeps its natural direction.")
+            }
+            Section("Reverse scroll direction") {
+                Toggle("Mouse", isOn: bindable.reverseScrolling)
+                Toggle("Trackpad", isOn: bindable.reverseTrackpad)
+                Text("The two are independent. Magic Mouse scrolls like a trackpad, so the trackpad toggle covers it.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

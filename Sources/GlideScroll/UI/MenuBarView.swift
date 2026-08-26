@@ -10,6 +10,7 @@ struct MenuBarView: View {
         let bindable = Bindable(settings)
         Toggle("Smooth Scrolling", isOn: bindable.smoothScrolling)
         Toggle("Reverse Mouse Scrolling", isOn: bindable.reverseScrolling)
+        Toggle("Reverse Trackpad Scrolling", isOn: bindable.reverseTrackpad)
         Divider()
         Button("Settings…") {
             settings.selectedTab = .scrolling

@@ -19,6 +19,9 @@ final class SettingsStore {
     var reverseScrolling: Bool {
         didSet { defaults.set(reverseScrolling, forKey: Keys.reverseScrolling); pushConfig() }
     }
+    var reverseTrackpad: Bool {
+        didSet { defaults.set(reverseTrackpad, forKey: Keys.reverseTrackpad); pushConfig() }
+    }
     /// 0 = snappy, 1 = floaty. Mapped to the poster's convergence fraction.
     var smoothness: Double {
         didSet { defaults.set(smoothness, forKey: Keys.smoothness); pushConfig() }
@@ -33,15 +36,15 @@ final class SettingsStore {
     var optionBypass: Bool {
         didSet { defaults.set(optionBypass, forKey: Keys.optionBypass); pushConfig() }
     }
-    var showMenuBarIcon: Bool {
-        didSet { defaults.set(showMenuBarIcon, forKey: Keys.showMenuBarIcon) }
-    }
+    // Note: the "showMenuBarIcon" default is owned by @AppStorage in the App
+    // and GeneralSettingsView — scenes only observe @AppStorage, not this store.
 
     private let defaults = UserDefaults.standard
 
     private enum Keys {
         static let smoothScrolling = "smoothScrolling"
         static let reverseScrolling = "reverseScrolling"
+        static let reverseTrackpad = "reverseTrackpad"
         static let smoothness = "smoothness"
         static let speed = "speed"
         static let shiftHorizontal = "shiftHorizontal"
@@ -53,6 +56,7 @@ final class SettingsStore {
         defaults.register(defaults: [
             Keys.smoothScrolling: true,
             Keys.reverseScrolling: false,
+            Keys.reverseTrackpad: false,
             Keys.smoothness: 0.7,
             Keys.speed: 1.0,
             Keys.shiftHorizontal: true,
@@ -61,11 +65,11 @@ final class SettingsStore {
         ])
         smoothScrolling = defaults.bool(forKey: Keys.smoothScrolling)
         reverseScrolling = defaults.bool(forKey: Keys.reverseScrolling)
+        reverseTrackpad = defaults.bool(forKey: Keys.reverseTrackpad)
         smoothness = defaults.double(forKey: Keys.smoothness)
         speed = defaults.double(forKey: Keys.speed)
         shiftHorizontal = defaults.bool(forKey: Keys.shiftHorizontal)
         optionBypass = defaults.bool(forKey: Keys.optionBypass)
-        showMenuBarIcon = defaults.bool(forKey: Keys.showMenuBarIcon)
     }
 
     /// Push the current settings into the engine (call once at launch; the
@@ -77,7 +81,8 @@ final class SettingsStore {
     private func pushConfig() {
         ScrollEngine.shared.config = EngineConfig(
             smoothEnabled: smoothScrolling,
-            reverse: reverseScrolling,
+            reverseMouse: reverseScrolling,
+            reverseTrackpad: reverseTrackpad,
             speed: speed,
             step: 35.0,
             trans: 0.40 - smoothness * 0.32, // smoothness 0…1 → trans 0.40…0.08

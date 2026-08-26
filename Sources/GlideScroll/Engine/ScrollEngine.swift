@@ -4,7 +4,8 @@ import ApplicationServices
 
 struct EngineConfig: Sendable {
     var smoothEnabled = true
-    var reverse = false
+    var reverseMouse = false
+    var reverseTrackpad = false
     var speed = 1.0          // multiplier on each wheel tick
     var step = 35.0          // minimum px scrolled per wheel notch
     var trans = 0.176        // per-frame convergence fraction at 60 Hz
@@ -83,16 +84,22 @@ final class ScrollEngine {
         if event.getIntegerValueField(.eventSourceUserData) == kGlideScrollMarker {
             return Unmanaged.passUnretained(event)
         }
-        guard event.isMouseWheelScroll else { return Unmanaged.passUnretained(event) }
-
         let cfg = config
 
+        guard event.isMouseWheelScroll else {
+            // Trackpad (and Magic Mouse) path: pass through, optionally
+            // reversed in place. Momentum events carry phases too, so
+            // inertial scrolling flips consistently with the gesture.
+            if cfg.reverseTrackpad { event.reverseScrollDeltas() }
+            return Unmanaged.passUnretained(event)
+        }
+
         if cfg.optionBypass && event.flags.contains(.maskAlternate) {
-            if cfg.reverse { event.reverseScrollDeltas() }
+            if cfg.reverseMouse { event.reverseScrollDeltas() }
             return Unmanaged.passUnretained(event)
         }
         if !cfg.smoothEnabled {
-            if cfg.reverse { event.reverseScrollDeltas() }
+            if cfg.reverseMouse { event.reverseScrollDeltas() }
             return Unmanaged.passUnretained(event)
         }
 
@@ -105,7 +112,7 @@ final class ScrollEngine {
         if dx != 0 { dx = (dx > 0 ? 1.0 : -1.0) * max(abs(dx), cfg.step) }
         dy *= cfg.speed
         dx *= cfg.speed
-        if cfg.reverse {
+        if cfg.reverseMouse {
             dy = -dy
             dx = -dx
         }
