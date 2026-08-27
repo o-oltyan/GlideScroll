@@ -28,15 +28,24 @@ extension CGEvent {
         return getDoubleValueField(line)
     }
 
-    /// In-place direction flip for the non-smoothed reverse path. All three
-    /// delta representations must be negated or apps see inconsistent values.
+    /// In-place direction flip. The three delta representations are coupled:
+    /// setting DeltaAxis makes macOS recompute PointDelta (8x) and FixedPtDelta
+    /// (1x) from it. So: read everything first, write the line delta first,
+    /// then restore the precise fixed/point values (Scroll Reverser's order).
+    /// Negate-in-place per field would re-read recomputed values and corrupt
+    /// the event (observed: +37 px in, +24 px out — direction unchanged).
     func reverseScrollDeltas() {
-        let fields: [CGEventField] = [
-            .scrollWheelEventDeltaAxis1, .scrollWheelEventPointDeltaAxis1, .scrollWheelEventFixedPtDeltaAxis1,
-            .scrollWheelEventDeltaAxis2, .scrollWheelEventPointDeltaAxis2, .scrollWheelEventFixedPtDeltaAxis2,
-        ]
-        for field in fields {
-            setDoubleValueField(field, value: -getDoubleValueField(field))
-        }
+        let d1 = getIntegerValueField(.scrollWheelEventDeltaAxis1)
+        let p1 = getDoubleValueField(.scrollWheelEventPointDeltaAxis1)
+        let f1 = getDoubleValueField(.scrollWheelEventFixedPtDeltaAxis1)
+        let d2 = getIntegerValueField(.scrollWheelEventDeltaAxis2)
+        let p2 = getDoubleValueField(.scrollWheelEventPointDeltaAxis2)
+        let f2 = getDoubleValueField(.scrollWheelEventFixedPtDeltaAxis2)
+        setIntegerValueField(.scrollWheelEventDeltaAxis1, value: -d1)
+        setDoubleValueField(.scrollWheelEventFixedPtDeltaAxis1, value: -f1)
+        setDoubleValueField(.scrollWheelEventPointDeltaAxis1, value: -p1)
+        setIntegerValueField(.scrollWheelEventDeltaAxis2, value: -d2)
+        setDoubleValueField(.scrollWheelEventFixedPtDeltaAxis2, value: -f2)
+        setDoubleValueField(.scrollWheelEventPointDeltaAxis2, value: -p2)
     }
 }

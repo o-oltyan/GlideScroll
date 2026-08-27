@@ -13,7 +13,10 @@ final class ScrollPoster: NSObject {
     private var currentX = 0.0, currentY = 0.0  // emitted so far
     private var flags: CGEventFlags = []
     private var displayLink: CADisplayLink?
-    private let deadZone = 0.3
+    // Posted point deltas quantize to whole pixels, so remainders below 1 px
+    // would spin the display link emitting zero-delta events. Flush the exact
+    // remainder in the final frame instead.
+    private let deadZone = 1.0
 
     func add(dx: Double, dy: Double, flags: CGEventFlags) {
         self.flags = flags
@@ -52,13 +55,18 @@ final class ScrollPoster: NSObject {
         // Same feel at any refresh rate: 120 Hz takes smaller steps than 60 Hz.
         let trans = 1.0 - pow(1.0 - trans60, 60.0 / hz)
 
-        let fdy = (bufferY - currentY) * trans
-        let fdx = (bufferX - currentX) * trans
+        var fdy = (bufferY - currentY) * trans
+        var fdx = (bufferX - currentX) * trans
         currentY += fdy
         currentX += fdx
-        post(dx: fdx, dy: fdy)
 
-        if abs(bufferY - currentY) <= deadZone && abs(bufferX - currentX) <= deadZone {
+        let finished = abs(bufferY - currentY) <= deadZone && abs(bufferX - currentX) <= deadZone
+        if finished {
+            fdy += bufferY - currentY
+            fdx += bufferX - currentX
+        }
+        post(dx: fdx, dy: fdy)
+        if finished {
             reset()
         }
     }
